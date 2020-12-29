@@ -37,6 +37,10 @@ RUN printf '#!/bin/bash\nexit 0' > /usr/sbin/policy-rc.d
 COPY install-zammad.sh /tmp
 RUN chmod +x /tmp/install-zammad.sh;/bin/bash -l -c /tmp/install-zammad.sh
 
+# install setup script
+COPY zammad-scheduler-loop.sh zammad-setup.sh zammad-wsserver-loop.sh zammad-stop.sh /
+RUN chmod +x /zammad-*.sh
+
 # cleanup
 RUN apt-get clean -y && \
     rm -rf preseed.txt /tmp/install-zammad.sh /var/lib/apt/lists/*

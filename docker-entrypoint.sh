@@ -2,17 +2,20 @@
 
 set -e
 
+rm -f /stop
+
 if [ "$1" = 'zammad' ]; then
-  echo -e "\n Starting services... \n"
 
-  # starting services
-  service postgresql start
-  service elasticsearch start
-  service postfix start
-  service memcached start
-  service nginx start
+  SERVICES="postgresql elasticsearch postfix memcached nginx"
 
-  # wait for postgres processe coming up
+  for s in $SERVICES
+  do
+    # using restart to circumvent possibly existing pid files
+    echo "Starting $s"
+    service "$s" restart
+  done
+
+  # wait for postgres to come up
   until su - postgres -c 'psql -c "select version()"' &> /dev/null; do
     echo "Waiting for PostgreSQL to be ready..."
     sleep 2
@@ -20,17 +23,36 @@ if [ "$1" = 'zammad' ]; then
 
   cd "${ZAMMAD_DIR}"
 
-  echo -e "\n Starting Zammad... \n"
-  su -c "bundle exec script/websocket-server.rb -b 0.0.0.0 start &" zammad
-  su -c "bundle exec script/scheduler.rb start &" zammad
+  rm -vf tmp/pids/*
 
-  # show url
-  echo -e "\nZammad will be ready in some seconds! Visit http://localhost in your browser!"
+  SET_UP_FILE="set-up-docker-$(hostname)"
+  if ! ls -l "$SET_UP_FILE"
+  then
+    echo -e "\n Setting up... \n"
+    /zammad-setup.sh
+    touch "$SET_UP_FILE"
+  fi
+
+  /zammad-wsserver-loop.sh &
+  /zammad-scheduler-loop.sh &
+
+  echo "Starting rails server..."
 
   # start railsserver
   if [ "${RAILS_SERVER}" == "puma" ]; then
-    su -c "bundle exec puma -b tcp://0.0.0.0:3000 -e ${RAILS_ENV}" zammad
+    while ! test -f /stop ; do su -c "bundle exec puma -b tcp://0.0.0.0:3000 -e ${RAILS_ENV}" zammad || sleep 1; done
   elif [ "${RAILS_SERVER}" == "unicorn" ]; then
-    su -c "bundle exec unicorn -p 3000 -c config/unicorn.rb -E ${RAILS_ENV}" zammad
+    while ! test -f /stop ; do su -c "bundle exec unicorn -p 3000 -c config/unicorn.rb -E ${RAILS_ENV}" zammad || sleep 1; done
   fi
+
+  for s in $SERVICES
+  do
+    echo "Stopping $s"
+    service "$s" stop
+  done
+
+  echo "docker-entrypoint.sh EXIT"
+
+else
+    exec "$@"
 fi
