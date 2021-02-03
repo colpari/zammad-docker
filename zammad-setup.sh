@@ -59,6 +59,6 @@ ln -sf /dev/stdout /var/log/nginx/access.log
 ln -sf /dev/stderr /var/log/nginx/error.log
 
 mkdir -vp "${ZAMMAD_DIR}/tmp/pids"
-chown -cR "${ZAMMAD_USER}:${ZAMMAD_USER}" "${ZAMMAD_DIR}"
+chown -R "${ZAMMAD_USER}:${ZAMMAD_USER}" "${ZAMMAD_DIR}"
 
 service nginx restart

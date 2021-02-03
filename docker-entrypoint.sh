@@ -4,6 +4,8 @@ set -e
 
 rm -f /stop
 
+trap /zammad-stop.sh SIGKILL
+
 if [ "$1" = 'zammad' ]; then
 
   SERVICES="postgresql elasticsearch postfix memcached nginx"
