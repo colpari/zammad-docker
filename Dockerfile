@@ -8,8 +8,8 @@ ENV ZAMMAD_DB_USER zammad
 ENV RAILS_ENV production
 ENV RAILS_LOG_TO_STDOUT 1
 ENV RAILS_SERVER puma
-ENV GIT_URL https://github.com/zammad/zammad.git
-ENV GIT_BRANCH develop
+ENV GIT_URL https://github.com/colpari/zammad.git
+ENV GIT_BRANCH colpari-develop
 ENV ES_SKIP_SET_KERNEL_PARAMETERS true
 
 
@@ -18,9 +18,9 @@ LABEL org.label-schema.build-date="$BUILD_DATE" \
       org.label-schema.license="AGPL-3.0" \
       org.label-schema.description="Zammad Docker container for easy testing" \
       org.label-schema.url="https://zammad.org" \
-      org.label-schema.vcs-url="https://github.com/zammad/zammad" \
+      org.label-schema.vcs-url="https://github.com/colpari/zammad" \
       org.label-schema.vcs-type="Git" \
-      org.label-schema.vendor="Zammad" \
+      org.label-schema.vendor="colpari" \
       org.label-schema.schema-version="3.x" \
       org.label-schema.docker.cmd="docker run -ti -p 80:80 zammad/zammad"
 
